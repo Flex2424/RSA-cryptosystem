@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 from os import urandom
+from hashlib import sha1
 from Crypto.Cipher import DES3
 from constants import e, d, n
 
@@ -42,19 +43,34 @@ class RSACryptoSystem:
         print('[+] 3DES - Decrypt Done!')
 
     @staticmethod
-    def rsa_encrypt(exp, msg, modulus):
+    def rsa_encrypt(msg, exp, modulus):
         return pow(msg, exp, modulus)
 
     @staticmethod
     def rsa_decrypt(cipher, private_exp, modulus):
         return pow(cipher, private_exp, modulus)
 
+    def rsa_add_signature(self, msg, p_exp, modulus):
+        h = sha1(str.encode(msg))
+        r = h.hexdigest()
+        signature = self.rsa_encrypt(msg=r, exp=p_exp, modulus=modulus)
+        return signature
 
-rsa = RSACryptoSystem('data_to_encrypt.txt', 'cipher_text.txt')
+    def rsa_check_signature(self, msg, signature, exp, modulus):
+        t = self.rsa_decrypt(cipher=signature, private_exp=exp, modulus=modulus)
+        h = sha1(str.encode(msg))
+        r = h.hexdigest()
+        if r == t:
+            return True
+        else:
+            return False
 
-key = urandom(24)
-rsa.encrypt_triple_des(key=key)
-key = int.from_bytes(key, byteorder='big')
-new_key = rsa.rsa_encrypt(int(e, 16), key, int(n, 16))
-restored_key = rsa.rsa_decrypt(int(new_key), int(d, 16), int(n, 16))
+# rsa = RSACryptoSystem('data_to_encrypt.txt', 'cipher_text.txt')
+#
+# key = urandom(24)
+# rsa.encrypt_triple_des(key=key)
+# key = int.from_bytes(key, byteorder='big')
+# new_key = rsa.rsa_encrypt(key, int(e, 16), int(n, 16))
+# restored_key = rsa.rsa_decrypt(int(new_key), int(d, 16), int(n, 16))
 # rsa.decrypt_triple_des(key=restored_key)
+

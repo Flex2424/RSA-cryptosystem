@@ -50,20 +50,26 @@ class RSACryptoSystem:
     def rsa_decrypt(cipher, private_exp, modulus):
         return pow(cipher, private_exp, modulus)
 
-    def rsa_add_signature(self, msg, p_exp, modulus):
-        h = sha1(str.encode(msg))
-        r = h.hexdigest()
-        signature = self.rsa_encrypt(msg=r, exp=p_exp, modulus=modulus)
-        return signature
+    @staticmethod
+    def rsa_add_signature(file, p_exp, modulus):
+        with open(file, 'rb') as msg:
+            h = sha1(msg.read())
+            r = h.hexdigest()
+            signature = RSACryptoSystem.rsa_encrypt(msg=int(r, 16), exp=p_exp, modulus=modulus)
+            return signature
 
-    def rsa_check_signature(self, msg, signature, exp, modulus):
-        t = self.rsa_decrypt(cipher=signature, private_exp=exp, modulus=modulus)
-        h = sha1(str.encode(msg))
-        r = h.hexdigest()
-        if r == t:
-            return True
-        else:
-            return False
+    @staticmethod
+    def rsa_check_signature(file, signature, exp, modulus):
+        with open(file, 'rb') as msg:
+            # return decimal hash
+            t = RSACryptoSystem.rsa_decrypt(cipher=signature, private_exp=exp, modulus=modulus)
+            h = sha1(msg.read())
+            # return hash in hex
+            r = h.hexdigest()
+            if int(r, 16) == t:
+                return True
+            else:
+                return False
 
 # rsa = RSACryptoSystem('data_to_encrypt.txt', 'cipher_text.txt')
 #
@@ -74,3 +80,5 @@ class RSACryptoSystem:
 # restored_key = rsa.rsa_decrypt(int(new_key), int(d, 16), int(n, 16))
 # rsa.decrypt_triple_des(key=restored_key)
 
+sig = RSACryptoSystem.rsa_add_signature('data_to_encrypt.txt', int(d, 16), int(n, 16))
+print(RSACryptoSystem.rsa_check_signature('data_to_encrypt.txt', sig, int(e, 16), int(n, 16)))

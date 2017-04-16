@@ -30,7 +30,7 @@ class ASN1:
         return asn.output()
 
     @staticmethod
-    def encode_file(modulus, exp, cipher_text, length):
+    def encode_file(modulus, exp, encrypted_key, length, cipher_text):
         file = asn1.Encoder()
         file.start()
         file.enter(asn1.Numbers.Sequence)
@@ -45,7 +45,7 @@ class ASN1:
         file.enter(asn1.Numbers.Sequence)
         file.leave()
         file.enter(asn1.Numbers.Sequence)
-        file.write(cipher_text, asn1.Numbers.Integer)
+        file.write(encrypted_key, asn1.Numbers.Integer)
         file.leave()
         file.leave()
         file.leave()
@@ -54,7 +54,23 @@ class ASN1:
         file.write(length, asn1.Numbers.Integer)
         file.leave()
         file.leave()
+        file.write(cipher_text)
         return file.output()
 
-    def parse_file(self):
-        pass
+    @staticmethod
+    def parse_file(filename):
+        with open(filename, 'rb') as file:
+            data = file.read()
+
+        file = asn1.Decoder()
+        file.start(data)
+        ASN1.parsing_file(file)
+
+    @staticmethod
+    def parsing_file(file):
+        while not file.eof():
+            tag = file.peek()
+            print(tag)
+            break
+
+

@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-from os import urandom
+import os
+from struct import pack
 from hashlib import sha1
 from Crypto.Cipher import DES3
 
@@ -11,6 +12,7 @@ class RSACryptoSystem:
     def __init__(self, in_file):
         self.in_file = in_file
         self.cipher_text = None
+        self.decrypted_text = None
 
     def encrypt_triple_des(self, key):
         self.cipher_text = bytes()
@@ -23,19 +25,18 @@ class RSACryptoSystem:
                 elif len(block) != DES3.block_size:
                     block += ' ' * (DES3.block_size - len(block))
                 self.cipher_text += des.encrypt(block)
-        print('[+] 3DES - Encrypt Done!')
         return self.cipher_text
 
-    def decrypt_triple_des(self, key):
+    def decrypt_triple_des(self, key, filename):
+        self.decrypted_text = bytes()
         des = DES3.new(key, DES3.MODE_ECB)
-        with open('decrypted.txt', 'w') as out:
+        with open(filename, 'rb') as file:
             while True:
                 block = file.read(DES3.block_size)
                 if len(block) == 0:
                     break
-                # out.write(des.decrypt(block))
-
-        print('[+] 3DES - Decrypt Done!')
+                self.decrypted_text += des.decrypt(block)
+        return self.decrypted_text
 
     @staticmethod
     def rsa_encrypt(msg, exp, modulus):
@@ -66,6 +67,40 @@ class RSACryptoSystem:
             else:
                 return False
 
+"""
+Encryption - descryption example
+"""
+# rsa = RSACryptoSystem('data_to_encrypt.txt')
+# key = os.urandom(24)
+#
+# cipher_text = rsa.encrypt_triple_des(key=key)
+#
+# encrypted_key = RSACryptoSystem.rsa_encrypt(
+#     int.from_bytes(key, byteorder='big'),
+#     int(exponent, 16),
+#     int(n_encryption, 16)
+# )
+#
+# restored_key = RSACryptoSystem.rsa_decrypt(
+#     encrypted_key,
+#     int(d_encryption, 16),
+#     int(n_encryption, 16)
+# )
+#
+# with open('encrypted_data', 'wb') as file:
+#     file.write(cipher_text)
+#
+# restored_key = restored_key.to_bytes((restored_key.bit_length() + 7) // 8, 'big')
+#
+# decrypted_text = rsa.decrypt_triple_des(key=restored_key, filename='encrypted_data')
+# try:
+#     os.remove('encrypted_data')
+# except:
+#     pass
+#
+# print(decrypted_text.decode('utf-8', 'ignore'))
+
+# ------------------------------------------------------------------
 
 """
 Checking signature example

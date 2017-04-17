@@ -7,6 +7,11 @@ from Crypto.Cipher import DES3
 from constants import exponent, d_encryption, d_signature, n_encryption, n_signature
 from parser import ASN1
 
+"""
+Need to fix!
+1. Find cipher text in binary file!
+2. Menu and program logic
+"""
 
 class RSACryptoSystem:
     def __init__(self, in_file):
@@ -101,6 +106,10 @@ asn.parse_file('encryption.efn')
 restored_module = asn.decoded_values[0]
 restored_exp = asn.decoded_values[1]
 encrypted_key = asn.decoded_values[2]
+
+for item in asn.decoded_values:
+    print(hex(item))
+    print()
 
 restored_key = RSACryptoSystem.rsa_decrypt(
     encrypted_key,

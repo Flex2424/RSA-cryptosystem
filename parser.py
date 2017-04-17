@@ -1,9 +1,12 @@
 #!/usr/bin/python3
-
+import struct
 import asn1
 
 
 class ASN1:
+    def __init__(self):
+        self.decoded_values = []
+
     @staticmethod
     def encode_file_signature(modulus, exp, signature):
         asn = asn1.Encoder()
@@ -57,20 +60,47 @@ class ASN1:
         file.write(cipher_text)
         return file.output()
 
-    @staticmethod
-    def parse_file(filename):
+    def parse_file(self, filename):
         with open(filename, 'rb') as file:
             data = file.read()
+            # print(data)
 
         file = asn1.Decoder()
         file.start(data)
-        ASN1.parsing_file(file)
+        self.parsing_file(file)
+        # cut the cipher text
+        tmp = self.decoded_values[-1]
+        tmp = struct.pack('>H', tmp)
+        with open(filename, 'rb') as file:
+            data = file.read()
+            # print(data.find(tmp), len(data))
+        data = bytearray(data)
+        ciphet_text_bytes = bytearray()
+        for i in range(len(data)):
+            # if +5 bytes after len ->
+            # cipher == encrypted_data
+            if i > data.find(tmp) + 5:
+                ciphet_text_bytes.append(data[i])
+        with open('cipher', 'wb') as file:
+            file.write(ciphet_text_bytes)
 
-    @staticmethod
-    def parsing_file(file):
+    def parsing_file(self, file):
         while not file.eof():
-            tag = file.peek()
-            print(tag)
-            break
+            try:
+                tag = file.peek()
+                if tag.nr == asn1.Numbers.Null:
+                    break
+                if tag.typ == asn1.Types.Primitive:
+                    tag, value = file.read()
+                    if tag.nr == asn1.Numbers.Integer:
+                        self.decoded_values.append(value)
+                else:
+                    file.enter()
+                    self.parsing_file(file)
+                    file.leave()
+            except asn1.Error:
+                break
 
 
+asn = ASN1()
+asn.parse_file('encryption.efn')

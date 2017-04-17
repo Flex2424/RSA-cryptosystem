@@ -71,8 +71,16 @@ def add_signature(rsa, filename):
     return True
 
 
-def check_signature(rsa):
-    pass
+def check_signature(signature, filename):
+    asn = ASN1()
+    asn.parse_file(signature)
+    restored_module = asn.decoded_values[0]
+    restored_exp = asn.decoded_values[1]
+    restored_sig = asn.decoded_values[2]
+    return RSACryptoSystem.rsa_check_signature(filename,
+                                              restored_sig,
+                                              int(exponent, 16),
+                                              restored_module)
 
 
 def main():
@@ -81,7 +89,8 @@ def main():
     parser.add_argument("-d", "--decrypt", help="Decrypt file", action="store_true")
     parser.add_argument("-s", "--signature", help="Add signature", action="store_true")
     parser.add_argument("-c", "--check", help="Check signature", action="store_true")
-    parser.add_argument("-f", "--file", help="File")
+    parser.add_argument("--file", help="File")
+    parser.add_argument("--file2", help="File2")
     args = parser.parse_args()
     rsa = RSACryptoSystem('data_to_encrypt.txt')
     if args.encrypt:
@@ -104,9 +113,16 @@ def main():
 
     elif args.check:
         print('[+] Check signature mode')
-        print('[+] filename: ', args.file)
+        print('[+] signature: ', args.file)
+        print('[+] filename: ', args.file2)
+        if check_signature(args.file, args.file2):
+            print('[+] Correct signature!')
+        else:
+            print('[-] Incorrect signature!')
+
 
 if __name__ == '__main__':
     main()
 
 # /home/dima/BurpSuiteFree/burpsuite_free.jar
+# /home/dima/website/website-pechenkin/requirements.txt

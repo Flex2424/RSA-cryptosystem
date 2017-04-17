@@ -98,4 +98,3 @@ class ASN1:
                     file.leave()
             except asn1.Error:
                 break
-

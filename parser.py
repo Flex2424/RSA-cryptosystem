@@ -63,26 +63,34 @@ class ASN1:
     def parse_file(self, filename):
         with open(filename, 'rb') as file:
             data = file.read()
-            # print(data)
-
         file = asn1.Decoder()
         file.start(data)
         self.parsing_file(file)
         # cut the cipher text
-        tmp = self.decoded_values[-1]
-        tmp = struct.pack('>H', tmp)
+        # tmp = self.decoded_values[-1]
+        # tmp = struct.pack('>H', tmp)
+        # with open(filename, 'rb') as file:
+        #     data = file.read()
+        #     print(data.find(tmp), len(data))
+        # data = bytearray(data)
+        # ciphet_text_bytes = bytearray()
+        # for i in range(len(data)):
+        #     # if +5 bytes after len ->
+        #     # cipher == encrypted_data
+        #     if i > data.find(tmp) + 5:
+        #         ciphet_text_bytes.append(data[i])
+        # with open('cipher', 'wb') as file:
+        #     file.write(ciphet_text_bytes)
         with open(filename, 'rb') as file:
             data = file.read()
-            # print(data.find(tmp), len(data))
-        data = bytearray(data)
-        ciphet_text_bytes = bytearray()
-        for i in range(len(data)):
-            # if +5 bytes after len ->
-            # cipher == encrypted_data
-            if i > data.find(tmp) + 5:
-                ciphet_text_bytes.append(data[i])
-        with open('cipher', 'wb') as file:
-            file.write(ciphet_text_bytes)
+            data = bytearray(data)
+            data.reverse()
+            file_len = self.decoded_values[-1]
+            cipher_text_bytes = bytearray()
+            for i in reversed(range(file_len)):
+                cipher_text_bytes.append(data[i])
+            with open('cipher', 'wb') as file:
+                file.write(cipher_text_bytes)
 
     def parsing_file(self, file):
         while not file.eof():
@@ -101,6 +109,3 @@ class ASN1:
             except asn1.Error:
                 break
 
-
-asn = ASN1()
-asn.parse_file('encryption.efn')

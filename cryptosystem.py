@@ -10,8 +10,10 @@ from parser import ASN1
 """
 Need to fix!
 1. Find cipher text in binary file!
-2. Menu and program logic
+2. Raise error if can't find syb bytes
+3. Menu and program logic
 """
+
 
 class RSACryptoSystem:
     def __init__(self, in_file):
@@ -72,7 +74,6 @@ class RSACryptoSystem:
                 return False
 
 
-
 """
 Encryption - descryption example
 """
@@ -107,10 +108,6 @@ restored_module = asn.decoded_values[0]
 restored_exp = asn.decoded_values[1]
 encrypted_key = asn.decoded_values[2]
 
-for item in asn.decoded_values:
-    print(hex(item))
-    print()
-
 restored_key = RSACryptoSystem.rsa_decrypt(
     encrypted_key,
     int(d_encryption, 16),
@@ -125,6 +122,7 @@ try:
 except:
     pass
 
+print('[+] Decrypted!')
 print(decrypted_text.decode('utf-8', 'ignore'))
 
 # ------------------------------------------------------------------

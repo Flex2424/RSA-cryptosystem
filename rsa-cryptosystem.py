@@ -18,14 +18,13 @@ class RSACryptoSystem:
         self.cipher_text = bytes()
         des = DES3.new(key, DES3.MODE_ECB)
         with open(self.in_file, 'r') as file:
-            while True:
-                block = file.read(DES3.block_size)
-                if len(block) == 0:
-                    break
-                elif len(block) != DES3.block_size:
-                    block += ' ' * (DES3.block_size - len(block))
-                self.cipher_text += des.encrypt(block)
-        return self.cipher_text
+            data = file.read()
+            to_add = 0
+            if len(data) % 8 != 0:
+                to_add = 8 - len(data) % 8
+            data += ' ' * to_add
+            self.cipher_text = des.encrypt(data)
+            return self.cipher_text
 
     def decrypt_triple_des(self, key, filename):
         self.decrypted_text = bytes()
@@ -67,38 +66,57 @@ class RSACryptoSystem:
             else:
                 return False
 
+
+
 """
 Encryption - descryption example
 """
-# rsa = RSACryptoSystem('data_to_encrypt.txt')
-# key = os.urandom(24)
-#
-# cipher_text = rsa.encrypt_triple_des(key=key)
-#
-# encrypted_key = RSACryptoSystem.rsa_encrypt(
-#     int.from_bytes(key, byteorder='big'),
-#     int(exponent, 16),
-#     int(n_encryption, 16)
-# )
-#
-# restored_key = RSACryptoSystem.rsa_decrypt(
-#     encrypted_key,
-#     int(d_encryption, 16),
-#     int(n_encryption, 16)
-# )
-#
-# with open('encrypted_data', 'wb') as file:
-#     file.write(cipher_text)
-#
-# restored_key = restored_key.to_bytes((restored_key.bit_length() + 7) // 8, 'big')
-#
-# decrypted_text = rsa.decrypt_triple_des(key=restored_key, filename='encrypted_data')
-# try:
-#     os.remove('encrypted_data')
-# except:
-#     pass
-#
-# print(decrypted_text.decode('utf-8', 'ignore'))
+rsa = RSACryptoSystem('data_to_encrypt.txt')
+key = os.urandom(24)
+
+cipher_text = rsa.encrypt_triple_des(key=key)
+
+with open('encrypted_data', 'wb') as file:
+    file.write(cipher_text)
+
+encrypted_key = RSACryptoSystem.rsa_encrypt(
+    int.from_bytes(key, byteorder='big'),
+    int(exponent, 16),
+    int(n_encryption, 16)
+)
+
+encoded_bytes = ASN1.encode_file(
+    int(n_encryption, 16),
+    int(exponent, 16),
+    encrypted_key,
+    len(cipher_text),
+    cipher_text
+)
+
+with open('encryption.efn', 'wb') as file:
+    file.write(encoded_bytes)
+
+asn = ASN1()
+asn.parse_file('encryption.efn')
+restored_module = asn.decoded_values[0]
+restored_exp = asn.decoded_values[1]
+encrypted_key = asn.decoded_values[2]
+
+restored_key = RSACryptoSystem.rsa_decrypt(
+    encrypted_key,
+    int(d_encryption, 16),
+    restored_module
+)
+
+restored_key = restored_key.to_bytes((restored_key.bit_length() + 7) // 8, 'big')
+
+decrypted_text = rsa.decrypt_triple_des(key=restored_key, filename='cipher')
+try:
+    os.remove('encrypted_data')
+except:
+    pass
+
+print(decrypted_text.decode('utf-8', 'ignore'))
 
 # ------------------------------------------------------------------
 
@@ -130,43 +148,3 @@ Checking signature example
 #                                           int(exponent, 16),
 #                                           restored_module))
 # -----------------------------------------------------------------------------------------
-
-# key = urandom(24)
-# cipher_text = rsa.encrypt_triple_des(key=key)
-#
-# encrypted_key = RSACryptoSystem.rsa_encrypt(
-#     int.from_bytes(cipher_text, byteorder='big'),
-#     int(exponent, 16),
-#     int(n_encryption, 16)
-# )
-#
-# encoded_bytes = ASN1.encode_file(
-#     int(n_encryption, 16),
-#     int(exponent, 16),
-#     encrypted_key,
-#     len(cipher_text),
-#     cipher_text)
-#
-# with open("encryption.efn", "wb") as file:
-#     file.write(encoded_bytes)
-#
-# parser = ASN1()
-# parser.parse_file('encryption.efn')
-# for item in parser.decoded_values:
-#     print(hex(item))
-#     print()
-
-# key = int.from_bytes(key, byteorder='big')
-# new_key = rsa.rsa_encrypt(key, int(e, 16), int(n, 16))
-# encoded_bytes = ASN1.encode_file_signature()
-# restored_key = rsa.rsa_decrypt(int(new_key), int(d, 16), int(n, 16))
-# rsa.decrypt_triple_des(key=restored_key)
-
-# sig = RSACryptoSystem.rsa_add_signature('data_to_encrypt.txt', int(d, 16), int(n, 16))
-# encoded_bytes = ASN1.encode_file_signature(int(n, 16), int(e, 16), sig)
-# with open("binary-asn.efn", "wb") as file:
-#     file.write(encoded_bytes)
-
-# print(RSACryptoSystem.rsa_check_signature('data_to_encrypt.txt', sig, int(e, 16), int(n, 16)))
-
-

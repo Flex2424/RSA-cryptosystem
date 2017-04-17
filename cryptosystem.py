@@ -46,14 +46,22 @@ class RSACryptoSystem:
         with open(file, 'rb') as msg:
             h = sha1(msg.read())
             r = h.hexdigest()
-            signature = RSACryptoSystem.rsa_encrypt(msg=int(r, 16), exp=p_exp, modulus=modulus)
+            signature = RSACryptoSystem.rsa_encrypt(
+                msg=int(r, 16),
+                exp=p_exp,
+                modulus=modulus
+            )
             return signature
 
     @staticmethod
     def rsa_check_signature(file, signature, exp, modulus):
         with open(file, 'rb') as msg:
             # returns decimal hash
-            t = RSACryptoSystem.rsa_decrypt(cipher=signature, private_exp=exp, modulus=modulus)
+            t = RSACryptoSystem.rsa_decrypt(
+                cipher=signature,
+                private_exp=exp,
+                modulus=modulus
+            )
             h = sha1(msg.read())
             # returns hash in hex
             r = h.hexdigest()

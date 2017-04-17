@@ -31,9 +31,9 @@ def encrypt(rsa):
     return True
 
 
-def decrypt(rsa):
+def decrypt(rsa, filename):
     asn = ASN1()
-    asn.parse_file('encryption.efn')
+    asn.parse_file(filename)
     restored_module = asn.decoded_values[0]
     restored_exp = asn.decoded_values[1]
     encrypted_key = asn.decoded_values[2]
@@ -53,11 +53,25 @@ def decrypt(rsa):
     return True
 
 
-def add_signature():
-    pass
+def add_signature(rsa, filename):
+    sign = rsa.rsa_add_signature(
+        filename,
+        int(d_signature, 16),
+        int(n_signature, 16)
+    )
+
+    encoded_bytes = ASN1.encode_file_signature(
+        int(n_signature, 16),
+        int(d_signature, 16),
+        sign
+    )
+    with open('signature.enf', 'wb') as file:
+        file.write(encoded_bytes)
+
+    return True
 
 
-def check_signature():
+def check_signature(rsa):
     pass
 
 
@@ -69,23 +83,30 @@ def main():
     parser.add_argument("-c", "--check", help="Check signature", action="store_true")
     parser.add_argument("-f", "--file", help="File")
     args = parser.parse_args()
-    rsa = RSACryptoSystem(args.file)
+    rsa = RSACryptoSystem('data_to_encrypt.txt')
     if args.encrypt:
         print('[+] Encryption mode')
         print('[+] filename: ', args.file)
         if encrypt(rsa):
             print('[+] Encrypted done!')
+            print('[+] Output: encryption.efn')
     elif args.decrypt:
         print('[+] Decryption mode')
         print('[+] filename: ', args.file)
-        if decrypt(rsa):
+        if decrypt(rsa, args.file):
             print('[+] Decrypted: ')
     elif args.signature:
         print('[+] Add signature mode')
         print('[+] filename: ', args.file)
+        if add_signature(rsa, args.file):
+            print('[+] Added signature')
+            print('[+] Output: signature.enf')
+
     elif args.check:
         print('[+] Check signature mode')
         print('[+] filename: ', args.file)
 
 if __name__ == '__main__':
     main()
+
+# /home/dima/BurpSuiteFree/burpsuite_free.jar

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import struct
+
 import asn1
 
 
@@ -66,21 +66,11 @@ class ASN1:
         file = asn1.Decoder()
         file.start(data)
         self.parsing_file(file)
-        # cut the cipher text
-        # tmp = self.decoded_values[-1]
-        # tmp = struct.pack('>H', tmp)
-        # with open(filename, 'rb') as file:
-        #     data = file.read()
-        #     print(data.find(tmp), len(data))
-        # data = bytearray(data)
-        # ciphet_text_bytes = bytearray()
-        # for i in range(len(data)):
-        #     # if +5 bytes after len ->
-        #     # cipher == encrypted_data
-        #     if i > data.find(tmp) + 5:
-        #         ciphet_text_bytes.append(data[i])
-        # with open('cipher', 'wb') as file:
-        #     file.write(ciphet_text_bytes)
+
+        # because
+        if filename == 'signature.enf':
+            return
+
         with open(filename, 'rb') as file:
             data = file.read()
             data = bytearray(data)
